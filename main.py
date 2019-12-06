@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # Module: default
-# Author: Roman V. M.
-# Created on: 28.11.2014
+# its based on the example plugin from Author: Roman V. M.
+# Author: MB
+# Created on: 2.12.2019
 # License: GPL v.3 https://www.gnu.org/copyleft/gpl.html
 
 import sys
@@ -18,17 +19,7 @@ _url = sys.argv[0]
 # Get the plugin handle as an integer number.
 _handle = int(sys.argv[1])
 
-# Free sample videos are provided by www.vidsplay.com
-# Here we use a fixed set of properties simply for demonstrating purposes
-# In a "real life" plugin you will need to get info and links to video files/streams
-# from some web-site or online service.
-
 VIDEOS = {}
-
-def do_basic():
-    global cms
-    cms = refinery.refinery()
-    return cms.get_videos()
 
 def get_url(**kwargs):
     """
@@ -39,33 +30,10 @@ def get_url(**kwargs):
     :return: plugin call URL
     :rtype: str
     """
-
-    print("#### #### CALLING get_url()")
     return '{0}?{1}'.format(_url, urlencode(kwargs))
 
-
-def get_categories():
-    global VIDEOS
-
-    """
-    Get the list of video categories.
-
-    Here you can insert some parsing code that retrieves
-    the list of video categories (e.g. 'Movies', 'TV-shows', 'Documentaries' etc.)
-    from some site or server.
-
-    .. note:: Consider using `generator functions <https://wiki.python.org/moin/Generators>`_
-        instead of returning lists.
-
-    :return: The list of video categories
-    :rtype: types.GeneratorType
-    """
-    print("#### #### CALLING get_categories()")
-    return VIDEOS.iterkeys()
-
-
 def get_videos(category):
-    global VIDEOS
+
     """
     Get the list of videofiles/streams.
 
@@ -80,16 +48,14 @@ def get_videos(category):
     :return: the list of videos in the category
     :rtype: list
     """
-    print("#### #### CALLING get_videos()")
-    return VIDEOS[category]
+    list = refinery.get_videos(category)
+    return list
 
 
 def list_categories():
-    global VIDEOS
     """
     Create the list of video categories in the Kodi interface.
     """
-    print("#### #### CALLING list_categories()")
     # Set plugin category. It is displayed in some skins as the name
     # of the current section.
     xbmcplugin.setPluginCategory(_handle, 'My Video Collection')
@@ -97,25 +63,27 @@ def list_categories():
     # for this type of content.
     xbmcplugin.setContent(_handle, 'videos')
     # Get video categories
-    categories = get_categories()
+
+    categories = refinery.get_categories()
+
     # Iterate through categories
     for category in categories:
         # Create a list item with a text label and a thumbnail image.
-        list_item = xbmcgui.ListItem(label=category)
+        list_item = xbmcgui.ListItem(label=category['name'])
         # Set graphics (thumbnail, fanart, banner, poster, landscape etc.) for the list item.
         # Here we use the same image for all items for simplicity's sake.
         # In a real-life plugin you need to set each image accordingly.
-        list_item.setArt({'thumb': VIDEOS[category][0]['thumb'],
-                          'icon': VIDEOS[category][0]['thumb'],
-                          'fanart': VIDEOS[category][0]['thumb']})
+        list_item.setArt({'thumb': category['thumb'],
+                          'icon': category['thumb'],
+                          'fanart': category['thumb']})
         # Set additional info for the list item.
         # Here we use a category name for both properties for for simplicity's sake.
         # setInfo allows to set various information for an item.
         # For available properties see the following link:
         # https://codedocs.xyz/xbmc/xbmc/group__python__xbmcgui__listitem.html#ga0b71166869bda87ad744942888fb5f14
         # 'mediatype' is needed for a skin to display info for this ListItem correctly.
-        list_item.setInfo('video', {'title': category,
-                                    'genre': category,
+        list_item.setInfo('video', {'title': category['name'],
+                                    'genre': "ok, sure i have to declare this ;)",
                                     'mediatype': 'video'})
         # Create a URL for a plugin recursive call.
         # Example: plugin://plugin.video.example/?action=listing&category=Animals
@@ -131,14 +99,12 @@ def list_categories():
 
 
 def list_videos(category):
-    global VIDEOS
     """
     Create the list of playable videos in the Kodi interface.
 
     :param category: Category name
     :type category: str
     """
-    print("#### #### CALLING list_videos()")
 
     # Set plugin category. It is displayed in some skins as the name
     # of the current section.
@@ -179,36 +145,21 @@ def list_videos(category):
 
 
 def play_video(path):
-    global VIDEOS
-    cms = refinery.refinery()
     """
     Play a video by the provided path.
 
     :param path: Fully-qualified video URL
     :type path: str
     """
-
-    print("#### #### CALLING play_video")
-    print("#### #### MAYBE HERE ?????")
-
     # Create a playable item with a path to play.
-    play_item = xbmcgui.ListItem(path=path)
+    play_item = xbmcgui.ListItem(path=refinery.get_moviesrc(path))
     # Pass the item to the Kodi player.
-    print(play_item.getPath())
 
-    print(cms.get_moviesrc(play_item.getPath()))
-
-    print("#### #### CALLING play_video#####################################################")
-    print("Decrypting HERE")
-
-    play_item2 = xbmcgui.ListItem(path=cms.get_moviesrc(play_item.getPath()))
-
-    xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item2)
+    xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
 
 
 
 def router(paramstring):
-    global VIDEOS
     """
     Router function that calls other functions
     depending on the provided paramstring
@@ -216,7 +167,6 @@ def router(paramstring):
     :param paramstring: URL encoded plugin paramstring
     :type paramstring: str
     """
-    print("#### #### CALLING router()")
 
     # Parse a URL-encoded paramstring to the dictionary of
     # {<parameter>: <value>} elements
@@ -225,9 +175,6 @@ def router(paramstring):
     if params:
         if params['action'] == 'listing':
             # Display the list of videos in a provided category.
-            print("HERE")
-            VIDEOS = do_basic()
-            print("How GAY")
             list_videos(params['category'])
 
         elif params['action'] == 'play':
@@ -241,9 +188,6 @@ def router(paramstring):
     else:
         # If the plugin is called from Kodi UI without any parameters,
         # display the list of video categories
-        print("or Here")
-        VIDEOS = do_basic()
-        print("Done")
         list_categories()
 
 

@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="plugin.video.deeprift"
-version="0.0.34"
+version="0.1.01"
 name="DeepRift"
 provider-name="MB">
 <requires>
     <import addon="xbmc.python" version="2.25.0"/>
     <import addon="script.module.requests" version="2.22.0"/>
     <import addon="script.module.beautifulsoup4" version="4.6.2"/>
-    <!--<import addon="script.module.web-pdb" />-->
 </requires>
 <extension point="xbmc.python.pluginsource" library="main.py">
   <provides>video</provides>
@@ -21,8 +20,15 @@ provider-name="MB">
     <fanart>fanart.jpg</fanart>
     <screenshot>resources\meme-01.jpg</screenshot>
     <screenshot>resources\meme-02.jpg</screenshot>
+	<screenshot>resources\meme-03.jpg</screenshot>
+      <screenshot>resources\meme-04.jpg</screenshot>
+	<screenshot>resources\meme-05.jpg</screenshot>
   </assets>
-  <news>Fap Fap Fap</news>
-    <news>Actual in debugging State</news>
+	<news>
+        Fap Fap Fap
+	Actual in debugging State
+        More Memes!
+	Now: the most common hashtags are avaiable!
+    </news>
 </extension>
 </addon>
